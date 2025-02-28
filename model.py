@@ -1,6 +1,9 @@
 import torch 
 import torch.nn as nn
 from torch.nn import functional as F
+import torch.quantization
+from torch.quantization import quantize_dynamic
+import argparse
 
 #### Hyper Parameters ####
 batch_size = 64
@@ -184,9 +187,17 @@ class GPTLanguageModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
         return idx
 
+def apply_quantization(model):
+    model = quantize_dynamic(model, {nn.Linear}, dtype=torch.qint8)
+    return model
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--quantize', action='store_true', help='Enable quantization')
+args = parser.parse_args()
 
 model = GPTLanguageModel()
+if args.quantize:
+    model = apply_quantization(model)
 m = model.to(device)
 print(sum(p.numel() for p in m.parameters())/1e6, 'M parameters')
 
@@ -207,4 +218,3 @@ for iter in range(max_iters):
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
-
