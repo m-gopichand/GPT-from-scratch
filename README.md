@@ -34,4 +34,9 @@ To run the model and generate text, follow these steps:
    python model.py
    ```
 
+## Quantization
+To enable quantization, use the `--quantize` command line argument when running the model. This will apply dynamic quantization to the model, reducing its size and improving inference speed.
 
+```bash
+python model.py --quantize
+```
